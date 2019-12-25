@@ -30,19 +30,21 @@ results=dict([
     (64, {'accuracy':[],'recall':[],'f1':[],'precision':[]}), 
     ])
 
-kf = KFold(n_splits=5)
+kf = KFold(n_splits=4,shuffle=True)
 kf.get_n_splits(df2)
 
 next(kf.split(df2), None)
 
-
 for units in results.keys():
     for train_index, test_index in kf.split(df2_data):
-        print(train_index)
-        print(test_index)
-        X_train=[df2_data[i] for i in train_index] 
-
-        X_train, X_test, y_train, y_test = train_test_split(df2_data, to_categorical(df2_labels,num_classes=64), test_size=0.3)
+        # print('Train')
+        # print(train_index)
+        # print('Test')
+        # print(test_index)
+        X_train = df2_data.iloc[train_index]
+        X_test =  df2_data.iloc[test_index]
+        y_train = to_categorical([df2_labels[i] for i in train_index],num_classes=64)
+        y_test =  to_categorical([df2_labels[i] for i in test_index],num_classes=64)
         #
         classifier = Sequential()
         classifier.add(Dense(units, activation='relu', kernel_initializer='random_normal', input_dim=X_train.shape[1]))
@@ -50,8 +52,8 @@ for units in results.keys():
         classifier.compile(optimizer ='adam',loss='categorical_crossentropy', metrics =['accuracy'])
         #
         #Fitting the data to the training dataset
-        classifier.fit(X_train,y_train, batch_size=50, epochs=50,use_multiprocessing=True)
-        eval_model=classifier.evaluate(X_train, y_train,use_multiprocessing=True)
+        classifier.fit(X_train,y_train, batch_size=50, epochs=50,use_multiprocessing=True,verbose=0)
+        eval_model=classifier.evaluate(X_train, y_train,use_multiprocessing=True,verbose=0)
         eval_model
         y_pred=classifier.predict(X_test)
         # y_pred =(y_pred>0.5)
@@ -60,15 +62,15 @@ for units in results.keys():
         # np.sum(cm.diagonal())
         # np.sum(cm)
         #
-        print('Units:',units,", Run:",run)
+        print('Units:',units)
         results[units]['accuracy'].append(accuracy_score(y_test.argmax(axis=1), y_pred.argmax(axis=1)))
         results[units]['recall'].append(recall_score(y_test.argmax(axis=1), y_pred.argmax(axis=1),average='weighted'))
         results[units]['f1'].append(f1_score(y_test.argmax(axis=1), y_pred.argmax(axis=1),average='weighted'))
         results[units]['precision'].append(precision_score(y_test.argmax(axis=1), y_pred.argmax(axis=1),average='weighted'))
 
-for units in results.keys():
-    accuracy=np.mean(results[units]['accuracy'])
-    recall=np.mean(results[units]['recall'])
-    f1=np.mean(results[units]['f1'])
-    precision=np.mean(results[units]['precision'])
-    print(units,accuracy,recall,f1,precision)
+    for units in results.keys():
+        accuracy=np.mean(results[units]['accuracy'])
+        recall=np.mean(results[units]['recall'])
+        f1=np.mean(results[units]['f1'])
+        precision=np.mean(results[units]['precision'])
+        print(units,accuracy,recall,f1,precision)
