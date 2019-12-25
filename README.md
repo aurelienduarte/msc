@@ -13,3 +13,5 @@
 * keras
 * Tensorflow
 * seaborn
+
+Note: data/ip2.nmap.online.hosts.masscan.csv was compressed to data/ip2.nmap.online.hosts.masscan.csv.gz due to LFS space restrictions.
